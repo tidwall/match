@@ -1,9 +1,11 @@
 package match
 
 import (
+	"fmt"
 	"math/rand"
 	"testing"
 	"time"
+	"unicode/utf8"
 )
 
 func TestMatch(t *testing.T) {
@@ -365,6 +367,28 @@ func TestRandomInput(t *testing.T) {
 			t.Fatal(err)
 		}
 		Match(string(b1), string(b2))
+	}
+}
+func testAllowable(pattern, exmin, exmax string) error {
+	min, max := Allowable(pattern)
+	if min != exmin || max != exmax {
+		return fmt.Errorf("expected '%v'/'%v', got '%v'/'%v'",
+			exmin, exmax, min, max)
+	}
+	return nil
+}
+func TestAllowable(t *testing.T) {
+	if err := testAllowable("hell*", "hell", "helm"); err != nil {
+		t.Fatal(err)
+	}
+	if err := testAllowable("hell?", "hell"+string(0), "hell"+string(utf8.MaxRune)); err != nil {
+		t.Fatal(err)
+	}
+	if err := testAllowable("h解析ell*", "h解析ell", "h解析elm"); err != nil {
+		t.Fatal(err)
+	}
+	if err := testAllowable("h解*ell*", "h解", "h觤"); err != nil {
+		t.Fatal(err)
 	}
 }
 func BenchmarkAscii(t *testing.B) {

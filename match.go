@@ -118,3 +118,75 @@ func deepMatchRune(str, pattern string) bool {
 
 	return srsz == 0 && prsz == 0
 }
+
+var maxRuneBytes = func() []byte {
+	b := make([]byte, 4)
+	if utf8.EncodeRune(b, '\U0010FFFF') != 4 {
+		panic("invalid rune encoding")
+	}
+	return b
+}()
+
+// Allowable parses the pattern and determines the minimum and maximum allowable
+// values that the pattern can represent.
+// When the max cannot be determined, 'true' will be returned
+// for infinite.
+func Allowable(pattern string) (min, max string) {
+	if pattern == "" || pattern[0] == '*' {
+		return "", ""
+	}
+
+	minb := make([]byte, 0, len(pattern))
+	maxb := make([]byte, 0, len(pattern))
+	var wild bool
+	for i := 0; i < len(pattern); i++ {
+		if pattern[i] == '*' {
+			wild = true
+			break
+		}
+		if pattern[i] == '?' {
+			minb = append(minb, 0)
+			maxb = append(maxb, maxRuneBytes...)
+		} else {
+			minb = append(minb, pattern[i])
+			maxb = append(maxb, pattern[i])
+		}
+	}
+	if wild {
+		r, n := utf8.DecodeLastRune(maxb)
+		if r != utf8.RuneError {
+			if r < utf8.MaxRune {
+				r++
+				if r > 0x7f {
+					b := make([]byte, 4)
+					nn := utf8.EncodeRune(b, r)
+					maxb = append(maxb[:len(maxb)-n], b[:nn]...)
+				} else {
+					maxb = append(maxb[:len(maxb)-n], byte(r))
+				}
+			}
+		}
+	}
+	return string(minb), string(maxb)
+	/*
+		return
+		if wild {
+			r, n := utf8.DecodeLastRune(maxb)
+			if r != utf8.RuneError {
+				if r < utf8.MaxRune {
+					infinite = true
+				} else {
+					r++
+					if r > 0x7f {
+						b := make([]byte, 4)
+						nn := utf8.EncodeRune(b, r)
+						maxb = append(maxb[:len(maxb)-n], b[:nn]...)
+					} else {
+						maxb = append(maxb[:len(maxb)-n], byte(r))
+					}
+				}
+			}
+		}
+		return string(minb), string(maxb), infinite
+	*/
+}
