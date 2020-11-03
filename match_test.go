@@ -381,7 +381,7 @@ func TestAllowable(t *testing.T) {
 	if err := testAllowable("hell*", "hell", "helm"); err != nil {
 		t.Fatal(err)
 	}
-	if err := testAllowable("hell?", "hell"+string(0), "hell"+string(utf8.MaxRune)); err != nil {
+	if err := testAllowable("hell?", "hell"+string(rune(0)), "hell"+string(utf8.MaxRune)); err != nil {
 		t.Fatal(err)
 	}
 	if err := testAllowable("h解析ell*", "h解析ell", "h解析elm"); err != nil {
