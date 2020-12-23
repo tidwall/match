@@ -3,6 +3,7 @@ package match
 import (
 	"fmt"
 	"math/rand"
+	"strings"
 	"testing"
 	"time"
 	"unicode/utf8"
@@ -426,4 +427,18 @@ func BenchmarkUnicode(t *testing.B) {
 			t.Fatal("fail")
 		}
 	}
+}
+
+func TestLotsaStars(t *testing.T) {
+	// This tests that a pattern with lots of stars will complete quickly.
+	var str, pat string
+
+	str = `,**,,**,**,**,**,**,**,`
+	pat = `,**********************************************{**",**,,**,**,` +
+		`**,**,"",**,**,**,**,**,**,**,**,**,**]`
+	Match(pat, str)
+
+	str = strings.Replace(str, ",", "情", -1)
+	pat = strings.Replace(pat, ",", "情", -1)
+	Match(pat, str)
 }
