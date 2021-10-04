@@ -37,6 +37,12 @@ func TestMatch(t *testing.T) {
 	if !Match("hello world", "he*o?*r*") {
 		t.Fatal("fail")
 	}
+	if !Match("hello*world", `hello\*world`) {
+		t.Fatal("fail")
+	}
+	if !Match("he解lo*world", `he解lo\*world`) {
+		t.Fatal("fail")
+	}
 	if !Match("的情况下解析一个", "*") {
 		t.Fatal("fail")
 	}
@@ -47,6 +53,9 @@ func TestMatch(t *testing.T) {
 		t.Fatal("fail")
 	}
 	if !Match("的情况下解析一个", "的情况?解析一个") {
+		t.Fatal("fail")
+	}
+	if Match("hello world\\", "hello world\\") {
 		t.Fatal("fail")
 	}
 }
@@ -350,6 +359,7 @@ func TestWildcardMatch(t *testing.T) {
 	}
 	// Iterating over the test cases, call the function under test and asert the output.
 	for i, testCase := range testCases {
+		// println("=====", i+1, "=====")
 		actualResult := Match(testCase.text, testCase.pattern)
 		if testCase.matched != actualResult {
 			t.Errorf("Test %d: Expected the result to be `%v`, but instead found it to be `%v`", i+1, testCase.matched, actualResult)
@@ -379,6 +389,9 @@ func testAllowable(pattern, exmin, exmax string) error {
 	return nil
 }
 func TestAllowable(t *testing.T) {
+	if err := testAllowable("*", "", ""); err != nil {
+		t.Fatal(err)
+	}
 	if err := testAllowable("hell*", "hell", "helm"); err != nil {
 		t.Fatal(err)
 	}
@@ -441,4 +454,34 @@ func TestLotsaStars(t *testing.T) {
 	str = strings.Replace(str, ",", "情", -1)
 	pat = strings.Replace(pat, ",", "情", -1)
 	Match(pat, str)
+
+	str = strings.Repeat("hello", 100)
+	pat = `*?*?*?*?*?*?*""`
+	Match(str, pat)
+
+	str = `*?**?**?**?**?**?***?**?**?**?**?*""`
+	pat = `*?*?*?*?*?*?**?**?**?**?**?**?**?*""`
+	Match(str, pat)
+
+}
+
+func TestSuffix(t *testing.T) {
+	sufmatch := func(t *testing.T, str, pat string, exstr, expat string, exok bool) {
+		t.Helper()
+		rstr, rpat, rok := matchTrimSuffix(str, pat)
+		if rstr != exstr || rpat != expat || rok != exok {
+			t.Fatalf(
+				"for '%s' '%s', expected '%s' '%s' '%t', got '%s' '%s' '%t'",
+				str, pat, exstr, expat, exok, rstr, rpat, rok)
+		}
+	}
+	sufmatch(t, "hello", "*hello", "", "*", true)
+	sufmatch(t, "jello", "*hello", "j", "*h", false)
+	sufmatch(t, "jello", "*?ello", "", "*", true)
+	sufmatch(t, "jello", "*\\?ello", "j", "*\\?", false)
+	sufmatch(t, "?ello", "*\\?ello", "", "*", true)
+	sufmatch(t, "?ello", "*\\?ello", "", "*", true)
+	sufmatch(t, "f?ello", "*\\?ello", "f", "*", true)
+	sufmatch(t, "f?ello", "**\\?ello", "f", "**", true)
+	sufmatch(t, "f?el*o", "**\\?el\\*o", "f", "**", true)
 }
