@@ -462,7 +462,25 @@ func TestLotsaStars(t *testing.T) {
 	str = `*?**?**?**?**?**?***?**?**?**?**?*""`
 	pat = `*?*?*?*?*?*?**?**?**?**?**?**?**?*""`
 	Match(str, pat)
+}
 
+func TestLimit(t *testing.T) {
+	var str, pat string
+	str = `,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,`
+	pat = `*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*"*,*`
+	_, stopped := MatchLimit(str, pat, 100)
+	if !stopped {
+		t.Fatal("expected true")
+	}
+
+	match, _ := MatchLimit(str, "*", 100)
+	if !match {
+		t.Fatal("expected true")
+	}
+	match, _ = MatchLimit(str, "*,*", 100)
+	if !match {
+		t.Fatal("expected true")
+	}
 }
 
 func TestSuffix(t *testing.T) {
