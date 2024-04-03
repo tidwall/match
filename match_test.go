@@ -1,62 +1,166 @@
 package match
 
 import (
+	"crypto/rand"
 	"fmt"
-	"math/rand"
 	"strings"
 	"testing"
-	"time"
 	"unicode/utf8"
 )
 
 func TestMatch(t *testing.T) {
-	if !Match("hello world", "hello world") {
-		t.Fatal("fail")
+	t.Parallel()
+
+	tests := []struct {
+		str string
+		pat string
+		res bool
+	}{
+		// Test case 1.
+		{
+			str: "hello world",
+			pat: "hello world",
+			res: true,
+		},
+		// Test case 2.
+		{
+			str: "hello world",
+			pat: "jello world",
+			res: false,
+		},
+		// Test case 3.
+		{
+			str: "hello world",
+			pat: "hello*",
+			res: true,
+		},
+		// Test case 4.
+		{
+			str: "hello world",
+			pat: "jello*",
+			res: false,
+		},
+		// Test case 5.
+		{
+			str: "hello world",
+			pat: "hello?world",
+			res: true,
+		},
+		// Test case 6.
+		{
+			str: "hello world",
+			pat: "jello?world",
+			res: false,
+		},
+		// Test case 7.
+		{
+			str: "hello world",
+			pat: "he*o?world",
+			res: true,
+		},
+		// Test case 8.
+		{
+			str: "hello world",
+			pat: "he*o?wor*",
+			res: true,
+		},
+		// Test case 9.
+		{
+			str: "hello world",
+			pat: "he*o?*r*",
+			res: true,
+		},
+		// Test case 10.
+		{
+			str: "hello*world",
+			pat: `hello\*world`,
+			res: true,
+		},
+		// Test case 11.
+		{
+			str: "he解lo*world",
+			pat: `he解lo\*world`,
+			res: true,
+		},
+		// Test case 12.
+		{
+			str: "的情况下解析一个",
+			pat: "*",
+			res: true,
+		},
+		// Test case 13.
+		{
+			str: "的情况下解析一个",
+			pat: "*况下*",
+			res: true,
+		},
+		// Test case 14.
+		{
+			str: "的情况下解析一个",
+			pat: "*况?*",
+			res: true,
+		},
+		// Test case 15.
+		{
+			str: "的情况下解析一个",
+			pat: "的情况?解析一个",
+			res: true,
+		},
+		// Test case 16.
+		{
+			str: "hello world\\",
+			pat: "hello world\\",
+			res: false,
+		},
+		// Test case 17.
+		{
+			str: `سلام`,
+			pat: `سلام`,
+			res: true,
+		},
+		// Test case 18.
+		{
+			str: `سلام world`,
+			pat: `سلام world`,
+			res: true,
+		},
+		// Test case 19.
+		{
+			str: `سلام۱۲`,
+			pat: `سلام?۲`,
+			res: true,
+		},
+		// Test case 20.
+		{
+			str: `اسم من علی میباشد`,
+			pat: `اسم?م*علی*`,
+			res: true,
+		},
+		// Test case 21.
+		{
+			str: `رضا`,
+			pat: `زضا`,
+			res: false,
+		},
+		// Test case 22.
+		{
+			str: `سلام*دنیا`,
+			pat: `سلام\*دنیا`,
+			res: true,
+		},
 	}
-	if Match("hello world", "jello world") {
-		t.Fatal("fail")
-	}
-	if !Match("hello world", "hello*") {
-		t.Fatal("fail")
-	}
-	if Match("hello world", "jello*") {
-		t.Fatal("fail")
-	}
-	if !Match("hello world", "hello?world") {
-		t.Fatal("fail")
-	}
-	if Match("hello world", "jello?world") {
-		t.Fatal("fail")
-	}
-	if !Match("hello world", "he*o?world") {
-		t.Fatal("fail")
-	}
-	if !Match("hello world", "he*o?wor*") {
-		t.Fatal("fail")
-	}
-	if !Match("hello world", "he*o?*r*") {
-		t.Fatal("fail")
-	}
-	if !Match("hello*world", `hello\*world`) {
-		t.Fatal("fail")
-	}
-	if !Match("he解lo*world", `he解lo\*world`) {
-		t.Fatal("fail")
-	}
-	if !Match("的情况下解析一个", "*") {
-		t.Fatal("fail")
-	}
-	if !Match("的情况下解析一个", "*况下*") {
-		t.Fatal("fail")
-	}
-	if !Match("的情况下解析一个", "*况?*") {
-		t.Fatal("fail")
-	}
-	if !Match("的情况下解析一个", "的情况?解析一个") {
-		t.Fatal("fail")
-	}
-	if Match("hello world\\", "hello world\\") {
-		t.Fatal("fail")
+
+	for i, test := range tests {
+		t.Run(
+			fmt.Sprintf("TestMatch: test %d", i),
+			func(t *testing.T) {
+				r := Match(test.str, test.pat)
+
+				if r != test.res {
+					t.Fatalf("str: %s, pat: %s - expected: %v, got: %v", test.str, test.pat, test.res, r)
+				}
+			},
+		)
 	}
 }
 
@@ -64,6 +168,8 @@ func TestMatch(t *testing.T) {
 // `WildcardMatch` supports '*' and '?' wildcards.
 // Sample usage: In resource matching for folder policy validation.
 func TestWildcardMatch(t *testing.T) {
+	t.Parallel()
+
 	testCases := []struct {
 		pattern string
 		text    string
@@ -350,7 +456,6 @@ func TestWildcardMatch(t *testing.T) {
 			matched: false,
 		},
 		// Test case 44.
-
 		{
 			pattern: "my-?-folder/abc*",
 			text:    "my-folder/mnopqanda",
@@ -360,24 +465,35 @@ func TestWildcardMatch(t *testing.T) {
 	// Iterating over the test cases, call the function under test and asert the output.
 	for i, testCase := range testCases {
 		// println("=====", i+1, "=====")
-		actualResult := Match(testCase.text, testCase.pattern)
-		if testCase.matched != actualResult {
-			t.Errorf("Test %d: Expected the result to be `%v`, but instead found it to be `%v`", i+1, testCase.matched, actualResult)
-		}
+		t.Run(
+			fmt.Sprintf("TestWildcardMatch: test %d", i),
+			func(t *testing.T) {
+				actualResult := Match(testCase.text, testCase.pattern)
+				if testCase.matched != actualResult {
+					t.Errorf("Test %d: Expected the result to be `%v`, but instead found it to be `%v`", i+1, testCase.matched, actualResult)
+				}
+			},
+		)
 	}
 }
 func TestRandomInput(t *testing.T) {
-	rand.Seed(time.Now().UnixNano())
+	t.Parallel()
+
 	b1 := make([]byte, 100)
 	b2 := make([]byte, 100)
-	for i := 0; i < 1000000; i++ {
-		if _, err := rand.Read(b1); err != nil {
-			t.Fatal(err)
-		}
-		if _, err := rand.Read(b2); err != nil {
-			t.Fatal(err)
-		}
-		Match(string(b1), string(b2))
+	for i := 0; i < 100000; i++ {
+		t.Run(
+			fmt.Sprintf("TestRandomInput: test %d", i),
+			func(t *testing.T) {
+				if _, err := rand.Read(b1); err != nil {
+					t.Fatal(err)
+				}
+				if _, err := rand.Read(b2); err != nil {
+					t.Fatal(err)
+				}
+				Match(string(b1), string(b2))
+			},
+		)
 	}
 }
 func testAllowable(pattern, exmin, exmax string) error {

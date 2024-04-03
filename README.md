@@ -14,9 +14,13 @@ go get -u github.com/tidwall/match
 ## Example
 
 ```go
-match.Match("hello", "*llo") 
-match.Match("jello", "?ello") 
-match.Match("hello", "h*o") 
+match.Match("hello", "*llo") // true
+match.Match("jello", "?ello") // true
+match.Match("hello", "h*o") // true
+
+match.IsPattern("name") // false
+match.IsPattern("H*o") // true
+match.IsPattern("??") // true
 ```
 
 
