@@ -33,6 +33,9 @@ func match0(str, pattern string, nocase bool) bool {
 	if pattern == "*" {
 		return true
 	}
+	if str == pattern && isLiteral(pattern) {
+		return true
+	}
 	return match(str, pattern, 0, nil, -1, nocase) == rMatch
 }
 
@@ -59,6 +62,9 @@ func matchLimit0(str, pattern string, maxcomp int, nocase bool,
 	if pattern == "*" {
 		return true, false
 	}
+	if str == pattern && isLiteral(pattern) {
+		return true, false
+	}
 	counter := 0
 	r := match(str, pattern, len(str), &counter, maxcomp, nocase)
 	if r == rStop {
@@ -80,6 +86,16 @@ func tolower(r rune) rune {
 		return r + 32
 	}
 	return r
+}
+
+func isLiteral(s string) bool {
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		if c == '*' || c == '?' || c == '\\' {
+			return false
+		}
+	}
+	return true
 }
 
 func match(str, pat string, slen int, counter *int, maxcomp int, nocase bool,
