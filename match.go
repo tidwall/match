@@ -38,12 +38,12 @@ func match0(str, pattern string, nocase bool) bool {
 
 // MatchLimit is the same as Match but will limit the complexity of the match
 // operation. This is to avoid long running matches, specifically to avoid ReDos
-// attacks from arbritary inputs.
+// attacks from arbitrary inputs.
 //
 // How it works:
 // The underlying match routine is recursive and may call itself when it
 // encounters a sandwiched wildcard pattern, such as: `user:*:name`.
-// Everytime it calls itself a counter is incremented.
+// Every time it calls itself a counter is incremented.
 // The operation is stopped when counter > maxcomp*len(str).
 func MatchLimit(str, pattern string, maxcomp int) (matched, stopped bool) {
 	return matchLimit0(str, pattern, maxcomp, false)
@@ -173,7 +173,7 @@ func match(str, pat string, slen int, counter *int, maxcomp int, nocase bool,
 }
 
 // matchTrimSuffix matches and trims any non-wildcard suffix characters.
-// Returns the trimed string and pattern.
+// Returns the trimmed string and pattern.
 //
 // This is called because the pattern contains extra data after the wildcard
 // star. Here we compare any suffix characters in the pattern to the suffix of

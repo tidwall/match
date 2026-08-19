@@ -481,6 +481,15 @@ func TestLimit(t *testing.T) {
 	if !match {
 		t.Fatal("expected true")
 	}
+
+	matched, stopped := MatchLimitNoCase("HELLO WORLD", "hello*", 100)
+	if !matched || stopped {
+		t.Fatal("expected match without stopping")
+	}
+	matched, stopped = MatchLimitNoCase(str, pat, 100)
+	if !stopped {
+		t.Fatal("expected true")
+	}
 }
 
 func TestSuffix(t *testing.T) {
