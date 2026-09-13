@@ -232,6 +232,12 @@ func Allowable(pattern string) (min, max string) {
 	maxb := make([]byte, 0, len(pattern))
 	var wild bool
 	for i := 0; i < len(pattern); i++ {
+		if pattern[i] == '\\' && i+1 < len(pattern) {
+			i++
+			minb = append(minb, pattern[i])
+			maxb = append(maxb, pattern[i])
+			continue
+		}
 		if pattern[i] == '*' {
 			wild = true
 			break
