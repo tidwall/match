@@ -523,4 +523,19 @@ func TestNoCase(t *testing.T) {
 	if !MatchNoCase("HelLO", "****eLL****") {
 		t.Fatal()
 	}
+	if Match("CAFÉ", "*café") {
+		t.Fatal()
+	}
+	if !MatchNoCase("CAFÉ", "*café") {
+		t.Fatal()
+	}
+	if !MatchNoCase("café", "*CAFÉ") {
+		t.Fatal()
+	}
+	if !MatchNoCase("ÜBER", "*über*") {
+		t.Fatal()
+	}
+	if !MatchNoCase("Привет", "*привет*") {
+		t.Fatal()
+	}
 }
