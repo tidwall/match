@@ -2,6 +2,7 @@
 package match
 
 import (
+	"unicode"
 	"unicode/utf8"
 )
 
@@ -78,6 +79,9 @@ const (
 func tolower(r rune) rune {
 	if r >= 'A' && r <= 'Z' {
 		return r + 32
+	}
+	if r > 0x7f {
+		return unicode.ToLower(r)
 	}
 	return r
 }
