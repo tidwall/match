@@ -199,6 +199,9 @@ func matchTrimSuffix(str, pat string, nocase bool) (string, string, bool) {
 				break
 			}
 		}
+		if pc == '\\' && !esc {
+			return str, pat, false
+		}
 		if pc == '*' && !esc {
 			match = true
 			break

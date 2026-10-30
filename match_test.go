@@ -524,3 +524,50 @@ func TestNoCase(t *testing.T) {
 		t.Fatal()
 	}
 }
+
+func TestDanglingEscape(t *testing.T) {
+	tests := []struct {
+		name    string
+		api     string
+		str     string
+		pattern string
+		want    bool
+	}{
+		{"match_one_backslash", "Match", `hello\`, `*\`, false},
+		{"match_three_backslashes", "Match", `hello\\`, `*\\\`, false},
+		{"nocase_one_backslash", "MatchNoCase", `HELLO\`, `*hello\`, false},
+		{"limit_one_backslash", "MatchLimit", `hello\`, `*\`, false},
+		{"limit_nocase_one_backslash", "MatchLimitNoCase", `HELLO\`, `*hello\`, false},
+		{"limit_nocase_three_backslashes", "MatchLimitNoCase", `HELLO\\`, `*hello\\\`, false},
+		{"escaped_backslash", "Match", `hello\`, `*\\`, true},
+		{"escaped_backslash_pair", "MatchLimit", `hello\\`, `*\\\\`, true},
+		{"escaped_question_mark", "MatchNoCase", `HELLO?`, `*hello\?`, true},
+		{"direct_dangling_escape", "Match", `hello\`, `hello\`, false},
+		{"unicode_dangling_escape", "MatchLimit", `界\`, `*界\`, false},
+		{"ordinary_unicode_wildcard", "MatchLimitNoCase", `HELLO界`, `*hello?`, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var matched, stopped bool
+			switch tt.api {
+			case "Match":
+				matched = Match(tt.str, tt.pattern)
+			case "MatchNoCase":
+				matched = MatchNoCase(tt.str, tt.pattern)
+			case "MatchLimit":
+				matched, stopped = MatchLimit(tt.str, tt.pattern, 100)
+			case "MatchLimitNoCase":
+				matched, stopped = MatchLimitNoCase(tt.str, tt.pattern, 100)
+			default:
+				t.Fatalf("unknown API %q", tt.api)
+			}
+			if stopped {
+				t.Fatalf("%s(%q, %q) unexpectedly reached the complexity limit", tt.api, tt.str, tt.pattern)
+			}
+			if matched != tt.want {
+				t.Fatalf("%s(%q, %q) = %v, want %v", tt.api, tt.str, tt.pattern, matched, tt.want)
+			}
+		})
+	}
+}
